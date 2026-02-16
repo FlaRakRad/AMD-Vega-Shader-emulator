@@ -5,7 +5,7 @@
 class SOP1_instructions
 {
 public:
-                                                // upcode: 8
+                                                  // upcode: 8
 	void S_BREV_B32(uint32_t src, uint32_t& dest) // description: Reverse bits.
 	{
     uint32_t result = 0;
