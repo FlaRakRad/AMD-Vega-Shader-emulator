@@ -8,15 +8,15 @@ public:
                                                   // upcode: 8
 	void S_BREV_B32(uint32_t src, uint32_t& dest) // description: Reverse bits.
 	{
-    uint32_t result = 0;
+    	uint32_t result = 0;
     
-    for (int i = 0; i < 32; ++i) 
-	{
-        if ((src >> i) & 1) 
+    	for (int i = 0; i < 32; ++i) 
 		{
-            result |= (1U << (31 - i));
-        }
-	}
+        	if ((src >> i) & 1) 
+			{
+            	result |= (1U << (31 - i));
+        	}
+		}
     
 		dest = result;
 	}
