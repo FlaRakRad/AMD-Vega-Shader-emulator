@@ -3,12 +3,23 @@
 #include <bitset>
 #include <string>
 
-class SOP1_instructions 
+class SOP1_instructions // Base: 0xBE800000
 {
 public:
     static constexpr uint32_t BASE = 0xBE800000;
+	
+	struct S_MOV_B32 // Opcode: 0
+	{
+        static constexpr uint8_t  ID   = 0;
+        static constexpr const char* NAME = "S_MOV_B32";
+        static void execute(uint32_t src, uint32_t& dest) 
+		{
+            dest = src;
+        }
+        static constexpr uint32_t hex() { return BASE | (ID << 8); }
+    };
 
-    struct S_BREV_B32 
+    struct S_BREV_B32 // Opcode: 8
     {
         static constexpr uint8_t  ID   = 8;
         static constexpr const char* NAME = "S_BREV_B32";
