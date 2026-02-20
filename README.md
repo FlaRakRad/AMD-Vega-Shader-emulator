@@ -13,8 +13,8 @@ Key-features
 
 In Progress
   12.3 SOP1 Instructions
-    SOP1	S_MOV_B32	  Done	Move 32-bit
-    SOP1	S_MOV_B64	  Done	Move 64-bit
-    SOP1	S_CMOV_B32	Done	Conditional Move 32-bit
-    SOP1	S_CMOV_B64	Done	Conditional Move 64-bit
-    SOP1	S_BREV_B32  Done  Bit Reverse 32-bit
+  SOP1	S_MOV_B32	  Done  Move 32-bit 
+  SOP1	S_MOV_B64	  Done	Move 64-bit 
+  SOP1	S_CMOV_B32	Done	Conditional Move 32-bit 
+  SOP1	S_CMOV_B64	Done	Conditional Move 64-bit 
+  SOP1	S_BREV_B32  Done  Bit Reverse 32-bit
