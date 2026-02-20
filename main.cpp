@@ -10,37 +10,89 @@ public:
 	
 	struct S_MOV_B32 // Opcode: 0
 	{
-        static constexpr uint8_t  ID   = 0;
+        static constexpr uint8_t  ID = 0;
+		static constexpr int LATENCY = 1;
         static constexpr const char* NAME = "S_MOV_B32";
-        static void execute(uint32_t src, uint32_t& dest) 
+        static void execute(uint32_t S0, uint32_t& D) 
 		{
-            dest = src;
+            D = S0;
         }
         static constexpr uint32_t hex() { return BASE | (ID << 8); }
     };
 
+	struct S_MOV_B64 // Opcode: 1
+	{
+		static constexpr uint8_t  ID = 1;
+		static constexpr int LATENCY = 1;
+		static constexpr const char* NAME = "S_MOV_B64";
+		static void execute(uint64_t S0, uint32_t* SGPR, uint8_t SDST) 
+		{
+			SGPR[SDST]     = static_cast<uint32_t>(S0 & 0xFFFFFFFF);
+        
+	       SGPR[SDST + 1] = static_cast<uint32_t>(S0 >> 32);
+		}
+		static constexpr uint32_t hex() { return BASE | (ID << 8); }
+	};
+
+	struct S_CMOV_B32 // Opcode 2
+	{
+		static constexpr uint8_t  ID = 2;
+		static constexpr int LATENCY = 1;
+		static constexpr const char* NAME = "S_CMOV_B32";
+		static void execute(uint32_t S0, uint32_t& D, bool SCC)
+		{
+			if (SCC)
+			{
+				D = S0;
+			}
+		}
+
+		static constexpr uint32_t hex() { return BASE | (ID << 8); }
+	};
+
+	struct S_CMOV_B64 // Opcode 3
+	{
+		static constexpr uint8_t  ID = 3;
+		static constexpr int LATENCY = 1;
+		static constexpr const char* NAME = "S_CMOV_B64";
+		static void execute(uint64_t S0, uint32_t* SGPR, uint8_t SDST, bool SCC)
+		{
+			if (SCC)
+			{
+				SGPR[SDST]     = static_cast<uint32_t>(S0 & 0xFFFFFFFF);
+				SGPR[SDST + 1] = static_cast<uint32_t>(S0 >> 32);
+			}
+		}
+		static constexpr uint32_t hex() { return BASE | (ID << 8); }
+	};
+	
     struct S_BREV_B32 // Opcode: 8
     {
-        static constexpr uint8_t  ID   = 8;
+        static constexpr uint8_t  ID = 8;
+		static constexpr int LATENCY = 1;
         static constexpr const char* NAME = "S_BREV_B32";
         static constexpr const char* DESC = "Reverse bits.";
 
-        static void execute(uint32_t src, uint32_t& dest) 
+        static void execute(uint32_t S0, uint32_t& D) 
         {
+		 #if defined (__GNUC__) || defined (__clang__)
+			D = __builtin_bitreverse32(S0);
+		 #else
             uint32_t result = 0;
             for (int i = 0; i < 32; ++i) 
             {
-                if ((src >> i) & 1) result |= (1U << (31 - i));
+                if ((S0 >> i) & 1) result |= (1U << (31 - i));
             }
-            dest = result;
+            D = result;
+		 #endif
         }
-        
         static constexpr uint32_t hex() { return BASE | (ID << 8); }
     };
 };
 
 int main() 
 {
+	// Just for debuging!
     std::string binary_input;
     std::cout << "Set input (32 bits): ";
     std::cin >> binary_input;
