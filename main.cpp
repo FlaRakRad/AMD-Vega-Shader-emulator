@@ -29,7 +29,7 @@ public:
 		{
 			SGPR[SDST]     = static_cast<uint32_t>(S0 & 0xFFFFFFFF);
         
-	       SGPR[SDST + 1] = static_cast<uint32_t>(S0 >> 32);
+	    	SGPR[SDST + 1] = static_cast<uint32_t>(S0 >> 32);
 		}
 		static constexpr uint32_t hex() { return BASE | (ID << 8); }
 	};
