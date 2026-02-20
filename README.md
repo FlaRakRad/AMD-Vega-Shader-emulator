@@ -11,8 +11,8 @@ Key-features
 * Hybrid Optimization
 * Instruction-Level Granularity: every instruction is special functional block using for debuging and modulation
 
-In Progress
-### 12.3 SOP1 Instructions
+
+### 12.3 SOP1 Instructions (In Progress)
 ```text
 SOP1    S_MOV_B32      Done    Move 32-bit
 SOP1    S_MOV_B64      Done    Move 64-bit
