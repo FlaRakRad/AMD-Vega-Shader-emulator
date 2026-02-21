@@ -35,7 +35,7 @@ namespace vega
 			static constexpr uint32_t hex() { return BASE | (ID << 8); }
 		};
 
-		struct S_CMOV_B32 // Opcode 2
+		struct S_CMOV_B32 // Opcode: 2
 		{
 			static constexpr uint8_t  ID = 2;
 			static constexpr int LATENCY = 1;
@@ -47,11 +47,10 @@ namespace vega
 					D = S0;
 				}
 			}
-
 			static constexpr uint32_t hex() { return BASE | (ID << 8); }
 		};
 
-		struct S_CMOV_B64 // Opcode 3
+		struct S_CMOV_B64 // Opcode: 3
 		{
 			static constexpr uint8_t  ID = 3;
 			static constexpr int LATENCY = 1;
@@ -63,6 +62,81 @@ namespace vega
 					SGPR[SDST]     = static_cast<uint32_t>(S0 & 0xFFFFFFFF);
 					SGPR[SDST + 1] = static_cast<uint32_t>(S0 >> 32);
 				}
+			}
+			static constexpr uint32_t hex() { return BASE | (ID << 8); }
+		};
+
+		struct S_NOT_B32 // Opcode: 4
+		{
+			static constexpr uint8_t  ID = 4;
+			static constexpr int LATENCY = 1;
+			static constexpr const char* NAME = "S_NOT_B32";
+			static void execute(uint32_t S0, uint32_t& D, bool& SCC)
+			{
+				D = ~S0;
+				SCC = (D != 0);
+			}
+			static constexpr uint32_t hex() { return BASE | (ID << 8); }
+		};
+
+		struct S_NOT_B64 // Opcode: 5
+		{
+			static constexpr uint8_t  ID = 5;
+			static constexpr int LATENCY = 1;
+			static constexpr const char* NAME = "S_NOT_B64";
+			static void execute(uint64_t S0, uint32_t* SGPR, uint8_t SDST, bool& SCC)
+			{
+				uint64_t result = ~S0;
+				SGPR[SDST]     = static_cast<uint32_t>(result & 0xFFFFFFFF);
+			   SGPR[SDST + 1] = static_cast<uint32_t>(result >> 32);
+				SCC = (result != 0);
+			}
+			static constexpr uint32_t hex() { return BASE | (ID << 8); }
+		};
+
+		struct S_WQM_B32 // Opcode: 6
+		{
+			static constexpr uint8_t  ID = 6;
+			static constexpr int LATENCY = 1;
+			static constexpr const char* NAME = "S_WQM_B32";
+
+			static void execute(uint32_t S0, uint32_t& D, bool& SCC) 
+			{
+				uint32_t result = 0;
+				for (int q = 0; q < 8; ++q) 
+				{
+					uint32_t quad_mask = (0xF << (q * 4)); 
+					if (S0 & quad_mask) 
+					{
+						result |= quad_mask;
+					}
+				}
+				D = result;
+				SCC = (D != 0);
+			}
+			static constexpr uint32_t hex() { return BASE | (ID << 8); }
+		};
+
+		struct S_WQM_B64 // Opcode: 7
+		{
+			static constexpr uint8_t  ID = 7;
+			static constexpr int LATENCY = 1;
+			static constexpr const char* NAME = "S_WQM_B64";
+
+			static void execute(uint64_t S0, uint32_t* SGPR, uint8_t SDST, bool& SCC) 
+			{
+				uint64_t result = 0;
+				for (int q = 0; q < 16; ++q) 
+				{
+					uint64_t quad_mask = (0xFULL << (q * 4));
+					if (S0 & quad_mask) 
+					{
+						result |= quad_mask;
+					}
+				}
+				SGPR[SDST]     = static_cast<uint32_t>(result & 0xFFFFFFFF);
+				SGPR[SDST + 1] = static_cast<uint32_t>(result >> 32);
+				SCC = (result != 0);
 			}
 			static constexpr uint32_t hex() { return BASE | (ID << 8); }
 		};
@@ -89,8 +163,11 @@ namespace vega
 			}
 			static constexpr uint32_t hex() { return BASE | (ID << 8); }
 		};
+
 	};
 }
+
+
 int main() 
 {
 	// Just for debuging!
