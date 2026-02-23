@@ -164,12 +164,12 @@ namespace vega
 			static constexpr uint32_t hex() { return BASE | (ID << 8); }
 		};
 
-		struct S_BREV_B64 // Opcode : 9
+		struct S_BREV_B64 // Opcode: 9
 		{
 			static constexpr uint8_t  ID = 9;
 			static constexpr int LATENCY = 1;
 			static constexpr const char* NAME = "S_BREV_B64";
-			static constexpr const char* DESC = " Reverse bits.";
+			static constexpr const char* DESC = "Reverse bits.";
 
 			static void execute(uint64_t S0, uint32_t* SGPR, uint8_t SDST)
 			{
@@ -183,6 +183,29 @@ namespace vega
 				}
 				SGPR[SDST]	   = static_cast<uint32_t>(result & 0xFFFFFFFF);
 				SGPR[SDST + 1] = static_cast<uint32_t>(result >> 32);
+			}
+			static constexpr uint32_t hex() { return BASE | (ID << 8); }
+		};
+
+		struct S_BCNT0_I32_B32 // Opcode: 10
+		{
+			static constexpr uint8_t  ID = 10;
+			static constexpr int LATENCY = 1;
+			static constexpr const char* NAME = "S_BCNT0_I32_B32";
+			static constexpr const char* DESC = "Bit Count 0 (zero).";
+
+			static void execute(uint S0, uint32_t& D, bool& SCC)
+			{
+				uint32_t result = 0;
+				for (int i =0; i < 32; ++i)
+				{
+					if (((S0 >> i) & 1) ==0)
+					{
+						result++;
+					}
+				}
+				D	= result;
+				SCC = (D != 0);
 			}
 			static constexpr uint32_t hex() { return BASE | (ID << 8); }
 		};
