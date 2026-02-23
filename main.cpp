@@ -210,6 +210,29 @@ namespace vega
 			static constexpr uint32_t hex() { return BASE | (ID << 8); }
 		};
 
+		struct S_BCNT0_I32_B64 // Opcode: 11
+		{
+			static constexpr uint8_t  ID = 11;
+			static constexpr int LATENCY = 1;
+			static constexpr const char* NAME = "S_BCNT0_I32_B64";
+			static constexpr const char* DESC = "Bit Count 0 (zero).";
+
+			static void execute(uint64_t S0, uint32_t& D, bool& SCC)
+            {
+                uint32_t result = 0;
+                for (int i = 0; i < 64; ++i)
+                {
+                    if (((S0 >> i) & 1ULL) == 0)
+                    {
+                        result++;
+                    }
+                }
+                D = result;
+                SCC = (D != 0);
+            }
+			static constexpr uint32_t hex() { return BASE | (ID << 8); }
+		};
+
 	};
 }
 
