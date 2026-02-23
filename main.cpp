@@ -164,9 +164,31 @@ namespace vega
 			static constexpr uint32_t hex() { return BASE | (ID << 8); }
 		};
 
+		struct S_BREV_B64 // Opcode : 9
+		{
+			static constexpr uint8_t  ID = 9;
+			static constexpr int LATENCY = 1;
+			static constexpr const char* NAME = "S_BREV_B64";
+			static constexpr const char* DESC = " Reverse bits.";
+
+			static void execute(uint64_t S0, uint32_t* SGPR, uint8_t SDST)
+			{
+				uint64_t result = 0;
+				for (int i = 0; i < 64; ++i)
+				{
+					if ((S0 >> i) & 1ULL)
+					{	
+						result |= (1ULL << (63 - i));
+					}
+				}
+				SGPR[SDST]	   = static_cast<uint32_t>(result & 0xFFFFFFFF);
+				SGPR[SDST + 1] = static_cast<uint32_t>(result >> 32);
+			}
+			static constexpr uint32_t hex() { return BASE | (ID << 8); }
+		};
+
 	};
 }
-
 
 int main() 
 {
