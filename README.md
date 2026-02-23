@@ -23,3 +23,4 @@ SOP1    S_NOT_B64      Done    Bitwise Negation 64-bit
 SOP1    S_WQM_B32      Done    Whole Quad Mode 32-bit
 SOP1    S_WQM_B64      Done    Whole Quad Node 64-bit
 SOP1    S_BREV_B32     Done    Bit Reverse 32-bit
+SOP1    S_BREV_B64     Done    Bit Reverse 64-bit     
