@@ -194,10 +194,10 @@ namespace vega
 			static constexpr const char* NAME = "S_BCNT0_I32_B32";
 			static constexpr const char* DESC = "Bit Count 0 (zero).";
 
-			static void execute(uint S0, uint32_t& D, bool& SCC)
+			static void execute(uint32_t S0, uint32_t& D, bool& SCC)
 			{
 				uint32_t result = 0;
-				for (int i =0; i < 32; ++i)
+				for (int i = 0; i < 32; ++i)
 				{
 					if (((S0 >> i) & 1) ==0)
 					{
@@ -230,6 +230,29 @@ namespace vega
                 D = result;
                 SCC = (D != 0);
             }
+			static constexpr uint32_t hex() { return BASE | (ID << 8); }
+		};
+
+		struct S_BCNT1_I32_B32
+		{
+			static constexpr uint8_t  ID = 12;
+			static constexpr int LATENCY = 1;
+			static constexpr const char* NAME = "S_BCNT1_I32_B32";
+			static constexpr const char* DESC = "Bit Count 1 (ones).";
+
+			static void execute(uint32_t S0, uint32_t& D, bool& SCC)
+			{
+				uint32_t result = 0;
+				for (int i = 0; i < 32; ++i)
+				{
+					if (((S0 >> i) & 1) ==1)
+					{
+						result++;
+					}
+				}
+				D  = result;
+				SCC = (D != 0);
+			}
 			static constexpr uint32_t hex() { return BASE | (ID << 8); }
 		};
 
