@@ -26,3 +26,4 @@ SOP1    S_BREV_B32      Done    Bit Reverse 32-bit
 SOP1    S_BREV_B64      Done    Bit Reverse 64-bit     
 SOP1    S_BCNT0_I32_B32 Done    Count of zeors 32-bit
 SOP1    S_BCNT0_I32_B64 Done    Count of zeors 64-bit
+SOP1    S_BCNT1_I32_B64 Done    Count of ones 32-bit
