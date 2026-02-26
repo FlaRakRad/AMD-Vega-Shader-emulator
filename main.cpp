@@ -278,6 +278,40 @@ namespace vega
             }
 			static constexpr uint32_t hex() { return BASE | (ID << 8); }
 		};
+
+		struct S_FF0_I32_B32 // Opcode: 14
+		{
+			static constexpr uint8_t  ID = 14;
+			static constexpr int LATENCY = 1;
+			static constexpr const char* NAME = "S_FF0_I32_B32";
+			static constexpr const char* DESK = "Find First 0 (zero).";
+
+			static void execute(uint32_t S0, uint32_t& D, bool SCC);
+			static void execute(uint32_t S0, uint32_t& D) 
+            {
+                if (S0 == 0xFFFFFFFF) 
+                {
+                    D = 0xFFFFFFFF;
+                }
+                else 
+                {
+                  #if defined (__GNUC__) || defined (__clang__)
+                    D = static_cast<uint32_t>(__builtin_ctz(~S0));
+                  #else
+                    uint32_t result = 0;
+                    for (int i = 0; i < 32; ++i) 
+                    {
+                        if (((S0 >> i) & 1) == 0) 
+                        {
+                            result = i;
+                            break;
+                        }
+                    }
+                    D = result;
+				  #endif
+                }
+            }
+		};
 	};
 }
 
