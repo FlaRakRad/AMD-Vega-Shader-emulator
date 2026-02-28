@@ -1,44 +1,43 @@
 #pragma once
-
 #include <cstdint>
 #include <string>
 #include <unordered_map>
+#include <type_traits>
 
-struct SOP1_Base
-{
+struct SOP1_Base {
     virtual void run(uint32_t S0, uint32_t& D, bool& SCC) = 0;
     virtual ~SOP1_Base() = default;
 };
 
 extern std::unordered_map<std::string, SOP1_Base*> instruction_registry;
 
+template<typename T>
+void call_execute(uint32_t S0, uint32_t& D, bool& SCC) {
+    if constexpr (requires { T::execute(uint32_t{}, D, SCC); }) {
+        T::execute(S0, D, SCC);
+    }
+    else if constexpr (requires { T::execute(uint32_t{}, D); }) {
+        T::execute(S0, D);
+    }
+    else if constexpr (requires { T::execute(uint64_t{}, (uint32_t*)nullptr, uint8_t{}, SCC); }) {
+        T::execute((uint64_t)S0, &D, 0, SCC); 
+    }
+    else if constexpr (requires { T::execute(uint64_t{}, (uint32_t*)nullptr, uint8_t{}); }) {
+        T::execute((uint64_t)S0, &D, 0);
+    }
+}
+
 #define REGISTER_SOP1(CLASS_NAME) \
-    struct CLASS_NAME##_Runner : public SOP1_Base { \
-        void run(uint32_t S0, uint32_t& D, bool& SCC) override { \
-            if constexpr (requires { CLASS_NAME::execute(uint32_t{}, D, SCC); }) { \
-                CLASS_NAME::execute(S0, D, SCC); \
-            } \
-            else if constexpr (requires { CLASS_NAME::execute(uint32_t{}, D, bool{}); }) { \
-                CLASS_NAME::execute(S0, D, SCC); \
-            } \
-            else if constexpr (requires { CLASS_NAME::execute(uint32_t{}, D); }) { \
-                CLASS_NAME::execute(S0, D); \
-            } \
-            else { \
-                uint32_t fake_sgpr[2] = {D, 0}; \
-                if constexpr (requires { CLASS_NAME::execute(uint64_t{}, fake_sgpr, uint8_t{}, SCC); }) { \
-                    CLASS_NAME::execute((uint64_t)S0, fake_sgpr, 0, SCC); \
-                } else if constexpr (requires { CLASS_NAME::execute(uint64_t{}, fake_sgpr, uint8_t{}); }) { \
-                    CLASS_NAME::execute((uint64_t)S0, fake_sgpr, 0); \
-                } \
-                D = fake_sgpr[0]; \
-            } \
-        } \
-    }; \
-    inline bool CLASS_NAME##_is_reg = []() { \
-        instruction_registry[#CLASS_NAME] = new CLASS_NAME##_Runner(); \
-        return true; \
-    }();
+class CLASS_NAME##_Runner : public SOP1_Base { \
+public: \
+    void run(uint32_t S0, uint32_t& D, bool& SCC) override { \
+        call_execute<CLASS_NAME>(S0, D, SCC); \
+    } \
+}; \
+inline static bool CLASS_NAME##_registered = []() { \
+    instruction_registry[#CLASS_NAME] = new CLASS_NAME##_Runner(); \
+    return true; \
+}();
 
 namespace vega
 {
@@ -57,7 +56,6 @@ namespace vega
 			}
 			static constexpr uint32_t hex() { return BASE | (ID << 8); }
 		};
-	REGISTER_SOP1(S_MOV_B32)
 
 		struct S_MOV_B64 // Opcode: 1
 		{
@@ -72,7 +70,6 @@ namespace vega
 			}
 			static constexpr uint32_t hex() { return BASE | (ID << 8); }
 		};
-	REGISTER_SOP1(S_MOV_B64)
 
 		struct S_CMOV_B32 // Opcode: 2
 		{
@@ -88,7 +85,6 @@ namespace vega
 			}
 			static constexpr uint32_t hex() { return BASE | (ID << 8); }
 		};
-	REGISTER_SOP1(S_CMOV_B32)
 
 		struct S_CMOV_B64 // Opcode: 3
 		{
@@ -105,7 +101,6 @@ namespace vega
 			}
 			static constexpr uint32_t hex() { return BASE | (ID << 8); }
 		};
-	REGISTER_SOP1(S_CMOV_B64)
 
 		struct S_NOT_B32 // Opcode: 4
 		{
@@ -119,7 +114,6 @@ namespace vega
 			}
 			static constexpr uint32_t hex() { return BASE | (ID << 8); }
 		};
-	REGISTER_SOP1(S_NOT_B32)
 
 		struct S_NOT_B64 // Opcode: 5
 		{
@@ -130,12 +124,11 @@ namespace vega
 			{
 				uint64_t result = ~S0;
 				SGPR[SDST]     = static_cast<uint32_t>(result & 0xFFFFFFFF);
-			 SGPR[SDST + 1] = static_cast<uint32_t>(result >> 32);
+			   SGPR[SDST + 1] = static_cast<uint32_t>(result >> 32);
 				SCC = (result != 0);
 			}
 			static constexpr uint32_t hex() { return BASE | (ID << 8); }
 		};
-	REGISTER_SOP1(S_NOT_B64)
 
 		struct S_WQM_B32 // Opcode: 6
 		{
@@ -159,7 +152,6 @@ namespace vega
 			}
 			static constexpr uint32_t hex() { return BASE | (ID << 8); }
 		};
-	REGISTER_SOP1(S_WQM_B32)
 
 		struct S_WQM_B64 // Opcode: 7
 		{
@@ -184,7 +176,6 @@ namespace vega
 			}
 			static constexpr uint32_t hex() { return BASE | (ID << 8); }
 		};
-	REGISTER_SOP1(S_WQM_B64)
 		
 		struct S_BREV_B32 // Opcode: 8
 		{
@@ -195,20 +186,15 @@ namespace vega
 
 			static void execute(uint32_t S0, uint32_t& D) 
 			{
-			#if defined (__GNUC__) || defined (__clang__)
-				D = __builtin_bitreverse32(S0);
-			#else
 				uint32_t result = 0;
 				for (int i = 0; i < 32; ++i) 
 				{
 					if ((S0 >> i) & 1) result |= (1U << (31 - i));
 				}
 				D = result;
-			#endif
 			}
 			static constexpr uint32_t hex() { return BASE | (ID << 8); }
 		};
-	REGISTER_SOP1(S_BREV_B32)
 
 		struct S_BREV_B64 // Opcode: 9
 		{
@@ -227,12 +213,11 @@ namespace vega
 						result |= (1ULL << (63 - i));
 					}
 				}
-				SGPR[SDST]	 = static_cast<uint32_t>(result & 0xFFFFFFFF);
+				SGPR[SDST]	   = static_cast<uint32_t>(result & 0xFFFFFFFF);
 				SGPR[SDST + 1] = static_cast<uint32_t>(result >> 32);
 			}
 			static constexpr uint32_t hex() { return BASE | (ID << 8); }
 		};
-	REGISTER_SOP1(S_BREV_B64)
 
 		struct S_BCNT0_I32_B32 // Opcode: 10
 		{
@@ -256,7 +241,6 @@ namespace vega
 			}
 			static constexpr uint32_t hex() { return BASE | (ID << 8); }
 		};
-	REGISTER_SOP1(S_BCNT0_I32_B32)
 
 		struct S_BCNT0_I32_B64 // Opcode: 11
 		{
@@ -280,7 +264,6 @@ namespace vega
             }
 			static constexpr uint32_t hex() { return BASE | (ID << 8); }
 		};
-	REGISTER_SOP1(S_BCNT0_I32_B64)
 
 		struct S_BCNT1_I32_B32 // Opcode: 12
 		{
@@ -304,7 +287,6 @@ namespace vega
 			}
 			static constexpr uint32_t hex() { return BASE | (ID << 8); }
 		};
-	REGISTER_SOP1(S_BCNT1_I32_B32)
 
 		struct S_BCNT1_I32_B64 // Opcode: 13
 		{
@@ -328,8 +310,7 @@ namespace vega
             }
 			static constexpr uint32_t hex() { return BASE | (ID << 8); }
 		};
-	REGISTER_SOP1(S_BCNT1_I32_B64)
-	
+
 		struct S_FF0_I32_B32 // Opcode: 14
 		{
 			static constexpr uint8_t  ID = 14;
@@ -337,6 +318,7 @@ namespace vega
 			static constexpr const char* NAME = "S_FF0_I32_B32";
 			static constexpr const char* DESK = "Find First 0 (zero).";
 
+			static void execute(uint32_t S0, uint32_t& D, bool SCC);
 			static void execute(uint32_t S0, uint32_t& D) 
             {
                 if (S0 == 0xFFFFFFFF) 
@@ -358,10 +340,9 @@ namespace vega
                         }
                     }
                     D = result;
-		  #endif
+				  #endif
                 }
             }
 		};
-	REGISTER_SOP1(S_FF0_I32_B32)
 	};
 }
