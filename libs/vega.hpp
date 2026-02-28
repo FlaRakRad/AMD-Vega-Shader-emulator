@@ -1,3 +1,5 @@
+#pragma once
+
 #include <cstdint>
 #include <string>
 #include <unordered_map>
@@ -8,24 +10,20 @@ struct SOP1_Base
     virtual ~SOP1_Base() = default;
 };
 
-static std::unordered_map<std::string, SOP1_Base*> instruction_registry;
+extern std::unordered_map<std::string, SOP1_Base*> instruction_registry;
 
 #define REGISTER_SOP1(CLASS_NAME) \
     struct CLASS_NAME##_Runner : public SOP1_Base { \
         void run(uint32_t S0, uint32_t& D, bool& SCC) override { \
-            /* 1. Пытаемся вызвать 32-битную с SCC (S_NOT_B32 и др.) */ \
             if constexpr (requires { CLASS_NAME::execute(uint32_t{}, D, SCC); }) { \
                 CLASS_NAME::execute(S0, D, SCC); \
             } \
-            /* 2. Пытаемся вызвать 32-битную условную (S_CMOV_B32) */ \
             else if constexpr (requires { CLASS_NAME::execute(uint32_t{}, D, bool{}); }) { \
                 CLASS_NAME::execute(S0, D, SCC); \
             } \
-            /* 3. Пытаемся вызвать простую 32-битную (S_MOV_B32) */ \
             else if constexpr (requires { CLASS_NAME::execute(uint32_t{}, D); }) { \
                 CLASS_NAME::execute(S0, D); \
             } \
-            /* 4. Для всех 64-битных (S_MOV_B64, S_CMOV_B64, S_NOT_B64 и т.д.) */ \
             else { \
                 uint32_t fake_sgpr[2] = {D, 0}; \
                 if constexpr (requires { CLASS_NAME::execute(uint64_t{}, fake_sgpr, uint8_t{}, SCC); }) { \
@@ -33,7 +31,7 @@ static std::unordered_map<std::string, SOP1_Base*> instruction_registry;
                 } else if constexpr (requires { CLASS_NAME::execute(uint64_t{}, fake_sgpr, uint8_t{}); }) { \
                     CLASS_NAME::execute((uint64_t)S0, fake_sgpr, 0); \
                 } \
-                D = fake_sgpr[0]; /* Возвращаем младшую часть в D для теста */ \
+                D = fake_sgpr[0]; \
             } \
         } \
     }; \
@@ -132,7 +130,7 @@ namespace vega
 			{
 				uint64_t result = ~S0;
 				SGPR[SDST]     = static_cast<uint32_t>(result & 0xFFFFFFFF);
-			   SGPR[SDST + 1] = static_cast<uint32_t>(result >> 32);
+			 SGPR[SDST + 1] = static_cast<uint32_t>(result >> 32);
 				SCC = (result != 0);
 			}
 			static constexpr uint32_t hex() { return BASE | (ID << 8); }
@@ -197,16 +195,16 @@ namespace vega
 
 			static void execute(uint32_t S0, uint32_t& D) 
 			{
-			 #if defined (__GNUC__) || defined (__clang__)
+			#if defined (__GNUC__) || defined (__clang__)
 				D = __builtin_bitreverse32(S0);
-			 #else
+			#else
 				uint32_t result = 0;
 				for (int i = 0; i < 32; ++i) 
 				{
 					if ((S0 >> i) & 1) result |= (1U << (31 - i));
 				}
 				D = result;
-			 #endif
+			#endif
 			}
 			static constexpr uint32_t hex() { return BASE | (ID << 8); }
 		};
@@ -229,7 +227,7 @@ namespace vega
 						result |= (1ULL << (63 - i));
 					}
 				}
-				SGPR[SDST]	   = static_cast<uint32_t>(result & 0xFFFFFFFF);
+				SGPR[SDST]	 = static_cast<uint32_t>(result & 0xFFFFFFFF);
 				SGPR[SDST + 1] = static_cast<uint32_t>(result >> 32);
 			}
 			static constexpr uint32_t hex() { return BASE | (ID << 8); }
@@ -360,7 +358,7 @@ namespace vega
                         }
                     }
                     D = result;
-				  #endif
+		  #endif
                 }
             }
 		};
