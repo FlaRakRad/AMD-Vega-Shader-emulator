@@ -5,6 +5,7 @@
 
 int main()
 {
+using namespace vega::SOP1_instructions;
 	std::string input_bits;
 	uint32_t S0 = 0;
 	uint32_t D = 0;
@@ -23,10 +24,10 @@ int main()
         std::cerr << "Invalid bit string!" << std::endl;
         return 1;
 	}
-	vega::SOP1_instructions::S_NOT_B32::execute(S0, D, SCC);
-	std::cout << "Midle unswer:   0b" << std::bitset<32>(D) << std::endl;
-	vega::SOP1_instructions::S_MOV_B32::execute(D, S0);
-	vega::SOP1_instructions::S_BCNT0_I32_B32::execute(S0, D, SCC);
+	S_NOT_B32::execute(S0, D, SCC);
+		std::cout << "Midle unswer:   0b" << std::bitset<32>(D) << std::endl;
+	S_MOV_B32::execute(D, S0);
+	S_BCNT0_I32_B32::execute(S0, D, SCC);
 
 	std::cout << "Your answer is: 0b" << std::bitset<32>(D) << std::endl;
 	return 0;
