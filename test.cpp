@@ -1,18 +1,14 @@
 #include "libs/vega.hpp"
 #include <iostream>
 #include <bitset>
+#include <string>
 
 int main()
 {
-	/*int D = vega::SOP1_instructions::S_WQM_B64::ID;
-	std::cout << D << std::endl;*/
-	
-	uint32_t S0 = 0b100101101000000001111011101101; 
-    uint32_t D = 0;
-    bool SCC = false;
-
-	vega::SOP1_instructions::S_WQM_B32::execute(S0, D, SCC);
-	std::cout << std::bitset<32>(D) << std::endl;
+	uint32_t D = vega::SOP1_instructions::S_WQM_B32::hex();
+	std::cout << "0x" << std::hex << D << std::endl;
+	std::cout << std::dec << D << std::endl;
+	std::cout << "0b" << std::bitset<32>(D) << std::endl;
 
 
 	return 0;

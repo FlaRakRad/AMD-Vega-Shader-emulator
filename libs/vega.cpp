@@ -1,4 +1,4 @@
-#include "vega1.hpp"
+#include "vega.hpp"
 
 std::unordered_map<std::string, SOP1_Base*> instruction_registry;
 
