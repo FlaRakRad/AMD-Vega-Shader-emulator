@@ -1,6 +1,8 @@
 #pragma once
+
 #include <cstdint>
 #include <string>
+#include <sys/types.h>
 #include <unordered_map>
 #include <type_traits>
 
@@ -41,7 +43,7 @@ inline static bool CLASS_NAME##_registered = []() { \
 
 namespace vega
 {
-	namespace SOP1_instructions // Base: 0xBE800000
+	namespace SOP1 // Base: 0xBE800000
 	{
 		static constexpr uint32_t BASE = 0xBE800000;
 		
@@ -318,7 +320,6 @@ namespace vega
 			static constexpr const char* NAME = "S_FF0_I32_B32";
 			static constexpr const char* DESK = "Find First 0 (zero).";
 
-			static void execute(uint32_t S0, uint32_t& D, bool SCC);
 			static void execute(uint32_t S0, uint32_t& D) 
             {
                 if (S0 == 0xFFFFFFFF) 
@@ -344,5 +345,117 @@ namespace vega
                 }
             }
 		};
+
+        struct S_FF0_I32_B64 // Opcode: 15
+        {
+            static constexpr uint8_t  ID = 15;
+			static constexpr int LATENCY = 1;
+			static constexpr const char* NAME = "S_FF0_I32_B64";
+			static constexpr const char* DESK = "Find First 0 (zero).";
+
+            static void execute(uint64_t S0, uint32_t& D)
+            {
+                if (S0 == 0xFFFFFFFFFFFFFFFFULL) 
+                {
+                    D = 0xFFFFFFFF;
+                }
+                else 
+                {
+                    for (int i = 0; i < 64; ++i) 
+                    {
+                        if (((S0 >> i) & 1) == 0) 
+                        {
+                            D = static_cast<uint32_t>(i);
+                            return;
+                        }
+                    }
+                }
+            }
+            static constexpr uint32_t hex() { return BASE | (ID << 8); }
+        };
+
+        struct S_FF1_I32_B32 // Opcode: 16
+        {
+            static constexpr uint8_t  ID = 16;
+			static constexpr int LATENCY = 1;
+			static constexpr const char* NAME = "S_FF0_I32_B32";
+			static constexpr const char* DESK = "Find First 1 (one).";
+
+            static void execute(uint32_t S0, uint32_t& D)
+            {
+                if (S0 == 0) 
+                {
+                    D = 0xFFFFFFFF;
+                }
+                else 
+                {
+                    for (int i = 0; i < 32; ++i) 
+                    {
+                        if (((S0 >> i) & 1) == 1) 
+                        {
+                            D = static_cast<uint32_t>(i);
+                            return;
+                        }
+                    }
+                }
+            }
+            static constexpr uint32_t hex() { return BASE | (ID << 8); }
+        };
+
+        struct S_FF1_I32_B64 // Opcode: 17
+        {
+            static constexpr uint8_t  ID = 17;
+            static constexpr int LATENCY = 1;
+            static constexpr const char* NAME = "S_FF1_I32_B64";
+            static constexpr const char* DESK = "Find first 1 (one).";
+
+            static void execute(uint64_t S0, uint32_t& D)
+            {
+                if (S0 == 0) 
+                {
+                  D = 0xFFFFFFFF;
+                }
+                else 
+                {
+                    for (int i = 0; i < 64; ++i) 
+                    {
+                        if (((S0 >> i) & 1) == 1) 
+                        {
+                            D = static_cast<uint32_t>(i);
+                            return;
+                        }
+                    }
+                }
+            }
+            static constexpr uint32_t hex() { return BASE | (ID << 8); }
+        };
+
+        struct S_FLBIT_I32_B32 // Opcode: 18
+        {
+            static constexpr uint8_t  ID = 18;
+            static constexpr int LATENCY = 1;
+            static constexpr const char* NAME = "S_FLBIT_I32_B32";
+            static constexpr const char* DESK = "";
+
+            static void execute(uint32_t S0, uint32_t& D)
+            {
+                if (S0 == 0) 
+                {
+                    D = 0xFFFFFFFF;
+                }
+                else 
+                {
+                    for (int i = 31; i >= 0; --i) 
+                    {
+                        if (((S0 >> i) & 1) == 1) 
+                        {
+                            D = static_cast<uint32_t>(31 - i);
+                            return;
+                        }
+                    }
+                }
+            }
+            static constexpr uint32_t hex() { return BASE | (ID << 8); }
+        };
 	};
 }

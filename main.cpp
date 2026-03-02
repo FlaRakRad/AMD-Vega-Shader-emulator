@@ -5,7 +5,8 @@
 
 int main()
 {
-using namespace vega::SOP1_instructions;
+using namespace vega::SOP1;
+
 	std::string input_bits;
 	uint32_t S0 = 0;
 	uint32_t D = 0;
@@ -27,7 +28,12 @@ using namespace vega::SOP1_instructions;
 	S_NOT_B32::execute(S0, D, SCC);
 		std::cout << "Midle unswer:   0b" << std::bitset<32>(D) << std::endl;
 	S_MOV_B32::execute(D, S0);
+
 	S_BCNT0_I32_B32::execute(S0, D, SCC);
+        std::cout << "Midle unswer:   0b" << std::bitset<32>(D) << std::endl;
+    S_MOV_B32::execute(D, S0);
+
+    S_WQM_B32::execute(S0, D, SCC);
 
 	std::cout << "Your answer is: 0b" << std::bitset<32>(D) << std::endl;
 	return 0;

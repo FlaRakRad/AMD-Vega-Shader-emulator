@@ -29,3 +29,7 @@ SOP1    S_BCNT0_I32_B64 Done    Count of zeors 64-bit
 SOP1    S_BCNT1_I32_B32 Done    Count of ones 32-bit
 SOP1    S_BCNT1_I32_B64 Done    Count of ones 64-bit
 SOP1    S_FF0_I32_B32   Done    Finds First zero 32-bit
+SOP1    S_FF0_I32_B64   Done    Finds First zero 64-bit
+SOP1    S_FF1_I32_B32   Done    Finds First one 32-bit
+SOP1    S_FF1_I32_B64   Done    Finds first one 64-bit
+SOP1    S_FLBIT_I32_B32 Done    Finds last bit 32-bit
