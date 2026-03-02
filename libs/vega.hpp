@@ -11,10 +11,16 @@ struct SOP1_Base {
     virtual ~SOP1_Base() = default;
 };
 
-extern std::unordered_map<std::string, SOP1_Base*> instruction_registry;
+struct SOP2_Base {
+    virtual void run(uint32_t S0, uint32_t S1, uint32_t& D, bool& SCC) = 0;
+    virtual ~SOP2_Base() = default;
+};
+
+extern std::unordered_map<std::string, SOP1_Base*> instruction_registry_sop1;
+extern std::unordered_map<std::string, SOP2_Base*> instruction_registry_sop2;
 
 template<typename T>
-void call_execute(uint32_t S0, uint32_t& D, bool& SCC) {
+void call_execute_sop1(uint32_t S0, uint32_t& D, bool& SCC) {
     if constexpr (requires { T::execute(uint32_t{}, D, SCC); }) {
         T::execute(S0, D, SCC);
     }
@@ -29,20 +35,63 @@ void call_execute(uint32_t S0, uint32_t& D, bool& SCC) {
     }
 }
 
+// Вызов для SOP2 (2 источника)
+template<typename T>
+void call_execute_sop2(uint32_t S0, uint32_t S1, uint32_t& D, bool& SCC) {
+    if constexpr (requires { T::execute(uint32_t{}, uint32_t{}, D); }) {
+        T::execute(S0, S1, D);
+    }
+    else if constexpr (requires { T::execute(uint32_t{}, uint32_t{}, D, SCC); }) {
+        T::execute(S0, S1, D, SCC);
+    }
+}
+
+
 #define REGISTER_SOP1(CLASS_NAME) \
 class CLASS_NAME##_Runner : public SOP1_Base { \
 public: \
     void run(uint32_t S0, uint32_t& D, bool& SCC) override { \
-        call_execute<CLASS_NAME>(S0, D, SCC); \
+        call_execute_sop1<CLASS_NAME>(S0, D, SCC); \
     } \
 }; \
 inline static bool CLASS_NAME##_registered = []() { \
-    instruction_registry[#CLASS_NAME] = new CLASS_NAME##_Runner(); \
+    instruction_registry_sop1[#CLASS_NAME] = new CLASS_NAME##_Runner(); \
+    return true; \
+}();
+
+#define REGISTER_SOP2(CLASS_NAME) \
+class CLASS_NAME##_RunnerSOP2 : public SOP2_Base { \
+public: \
+    void run(uint32_t S0, uint32_t S1, uint32_t& D, bool& SCC) override { \
+        call_execute_sop2<CLASS_NAME>(S0, S1, D, SCC); \
+    } \
+}; \
+inline static bool CLASS_NAME##_registered = []() { \
+    instruction_registry_sop2[#CLASS_NAME] = new CLASS_NAME##_RunnerSOP2(); \
     return true; \
 }();
 
 namespace vega
 {
+    namespace SOP2 // Base: 0x80000000
+    {
+        static constexpr uint32_t BASE = 0x80000000;
+
+        struct S_ADD_U32
+        {
+            static constexpr uint8_t  ID = 0;
+            static constexpr int LATENCY = 1;
+            static constexpr const char* NAME = "S_ADD_U32";
+            static constexpr const char* DESK = "Add unsigned 32-bit integers.";
+
+            static void execute(uint32_t S0, uint32_t S1, uint32_t& D)
+            {
+                D = S0 + S1;
+            }
+            static constexpr uint32_t hex() { return BASE | (ID << 23); }
+        };
+    };
+
 	namespace SOP1 // Base: 0xBE800000
 	{
 		static constexpr uint32_t BASE = 0xBE800000;
