@@ -36,3 +36,4 @@ SOP1    S_FF0_I32_B64   Done    Finds First zero 64-bit
 SOP1    S_FF1_I32_B32   Done    Finds First one 32-bit
 SOP1    S_FF1_I32_B64   Done    Finds first one 64-bit
 SOP1    S_FLBIT_I32_B32 Done    Finds last bit 32-bit
+SOP1    S_FLBIT_I32_B64 Done    Finds last bit 64-bit
