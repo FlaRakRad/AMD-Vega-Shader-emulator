@@ -42,7 +42,7 @@ using namespace vega;
         return 1;
 	}
 
- /*   SOP1::S_FLBIT_I32_B32::execute(S0, D);
+/*   SOP1::S_FLBIT_I32_B32::execute(S0, D);
         std::cout << "Midle unswer:   0b" << std::bitset<32>(D) << std::endl;
     SOP1::S_MOV_B32::execute(D, S0); */
 
