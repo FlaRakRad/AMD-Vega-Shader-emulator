@@ -77,16 +77,33 @@ namespace vega
     {
         static constexpr uint32_t BASE = 0x80000000;
 
-        struct S_ADD_U32
+        struct S_ADD_U32 // Opcode: 0
         {
             static constexpr uint8_t  ID = 0;
             static constexpr int LATENCY = 1;
             static constexpr const char* NAME = "S_ADD_U32";
             static constexpr const char* DESK = "Add unsigned 32-bit integers.";
 
-            static void execute(uint32_t S0, uint32_t S1, uint32_t& D)
+            static void execute(uint32_t S0, uint32_t S1, uint32_t& D, bool& SCC)
             {
-                D = S0 + S1;
+                uint64_t temp = static_cast<uint64_t>(S0) + static_cast<uint64_t>(S1);
+                D = static_cast<uint32_t>(temp);
+                SCC = (temp >= 0x100000000ULL); 
+            }
+            static constexpr uint32_t hex() { return BASE | (ID << 23); }
+        };
+
+        struct S_SUB_U32 // Opcode: 1
+        {
+            static constexpr uint8_t  ID = 1;
+            static constexpr int LATENCY = 1;
+            static constexpr const char* NAME = "S_SUB_U32";
+            static constexpr const char* DESK = "Sub unsigned 32-bit integers.";
+
+            static void execute(uint32_t S0, uint32_t S1, uint32_t& D, bool& SCC)
+            {
+                D = S0 - S1;
+                SCC = (S1 > S0); 
             }
             static constexpr uint32_t hex() { return BASE | (ID << 23); }
         };
