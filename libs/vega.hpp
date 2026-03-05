@@ -484,7 +484,7 @@ namespace vega
             static constexpr uint8_t  ID = 18;
             static constexpr int LATENCY = 1;
             static constexpr const char* NAME = "S_FLBIT_I32_B32";
-            static constexpr const char* DESK = "";
+            static constexpr const char* DESK = "Find last bit (count leading zeros) in 32-bit value.";
 
             static void execute(uint32_t S0, uint32_t& D)
             {
@@ -506,5 +506,33 @@ namespace vega
             }
             static constexpr uint32_t hex() { return BASE | (ID << 8); }
         };
-	};
+
+        struct S_FLBIT_I32_B64 // Opcode: 19
+        {
+            static constexpr uint8_t  ID = 19;
+            static constexpr int LATENCY = 1;
+            static constexpr const char* NAME = "S_FLBIT_I32_B64";
+            static constexpr const char* DESK = "Find last bit (count leading zeros) in 64-bit value.";
+
+            static void execute(uint64_t S0, uint32_t& D)
+            {
+                if (S0 == 0) 
+                {
+                    D = 0xFFFFFFFF;
+                }
+                else 
+                {
+                    for (int i = 63; i >= 0; --i) 
+                    {
+                        if (((S0 >> i) & 1ULL) == 1) 
+                        {
+                            D = static_cast<uint32_t>(63 - i);
+                            return;
+                        }
+                    }
+                }
+            }
+            static constexpr uint32_t hex() { return BASE | (ID << 8); }
+        };
+    };	    
 }
