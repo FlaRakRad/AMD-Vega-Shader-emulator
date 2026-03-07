@@ -55,7 +55,7 @@ int main()
     Debug a;
 
     a.ask_S0(); a.ask_S1();
-    S_ADD_U32::execute(a.S0, a.S1, a.D, a.SCC); S_JUMP_B32::execute([0x00000001]);
+    S_ADD_U32::execute(a.S0, a.S1, a.D, a.SCC); //S_JUMP_B32::execute([0x00000001]); :: exemple which i want
     a.echo_D(); a.echo_SCC();
     S_MOV_B32::execute(a.D, a.S0);
     a.ask_S1();
