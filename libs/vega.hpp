@@ -35,7 +35,6 @@ void call_execute_sop1(uint32_t S0, uint32_t& D, bool& SCC) {
     }
 }
 
-// Вызов для SOP2 (2 источника)
 template<typename T>
 void call_execute_sop2(uint32_t S0, uint32_t S1, uint32_t& D, bool& SCC) {
     if constexpr (requires { T::execute(uint32_t{}, uint32_t{}, D); }) {
@@ -104,6 +103,478 @@ namespace vega
             {
                 D = S0 - S1;
                 SCC = (S1 > S0); 
+            }
+            static constexpr uint32_t hex() { return BASE | (ID << 23); }
+        };
+
+      
+        struct S_ADD_I32 // Opcode: 2
+        {
+            static constexpr uint8_t  ID = 2;
+            static constexpr int LATENCY = 1;
+            static constexpr const char* NAME = "S_ADD_I32";
+            static constexpr const char* DESK = "";
+
+            static void execute(uint32_t S0, uint32_t S1, uint32_t& D, bool& SCC)
+            {
+                D = S0 + S1;
+
+                uint32_t s0_sign = S0 >> 31;
+                uint32_t s1_sign = S1 >> 31;
+                uint32_t d_sign  = D >> 31;
+
+                SCC = (s0_sign == s1_sign) && (s0_sign != d_sign);
+            }
+        };
+
+        struct S_SUB_I32 // Opcode: 3
+        {
+            static constexpr uint8_t  ID = 3;
+            static constexpr int LATENCY = 1;
+            static constexpr const char* NAME = "S_SUB_I32";
+            static constexpr const char* DESK = "Sub signed 32-bit integers with overflow check.";
+
+            static void execute(uint32_t S0, uint32_t S1, uint32_t& D, bool& SCC)
+            {
+                D = S0 - S1;
+
+                uint32_t s0_sign = S0 >> 31;
+                uint32_t s1_sign = S1 >> 31;
+                uint32_t d_sign  = D >> 31;
+
+                SCC = (s0_sign != s1_sign) && (s0_sign != d_sign);
+            }
+            static constexpr uint32_t hex() { return BASE | (ID << 23); }
+        };
+
+        struct S_ADDC_U32 // Opcode: 4
+        {
+            static constexpr uint8_t  ID = 4;
+            static constexpr int LATENCY = 1;
+            static constexpr const char* NAME = "S_ADDC_U32";
+            static constexpr const char* DESK = "Add unsigned 32-bit integers with Carry.";
+
+            static void execute(uint32_t S0, uint32_t S1, uint32_t& D, bool& SCC)
+            {
+                uint64_t carry = SCC ? 1 : 0;
+                uint64_t temp = static_cast<uint64_t>(S0) + static_cast<uint64_t>(S1) + carry;
+                D = static_cast<uint32_t>(temp);
+                SCC = (temp >= 0x100000000ULL); 
+            }
+            static constexpr uint32_t hex() { return BASE | (ID << 23); }
+        };
+
+        struct S_SUBB_U32 // Opcode: 5
+        {
+            static constexpr uint8_t  ID = 5;
+            static constexpr int LATENCY = 1;
+            static constexpr const char* NAME = "S_SUBB_U32";
+            static constexpr const char* DESK = "Sub unsigned 32-bit integers with Borrow.";
+
+            static void execute(uint32_t S0, uint32_t S1, uint32_t& D, bool& SCC)
+            {
+                uint64_t borrow = SCC ? 1 : 0;
+                uint64_t temp = static_cast<uint64_t>(S0) - static_cast<uint64_t>(S1) - borrow;
+                D = static_cast<uint32_t>(temp);
+                SCC = (static_cast<uint64_t>(S1) + borrow > static_cast<uint64_t>(S0));
+            }
+            static constexpr uint32_t hex() { return BASE | (ID << 23); }
+        };
+
+        struct S_MIN_I32 // Opcode: 6
+        {
+            static constexpr uint8_t  ID = 6;
+            static constexpr int LATENCY = 1;
+            static constexpr const char* NAME = "S_MIN_I32";
+            static constexpr const char* DESK = "Minimum of two signed 32-bit integers.";
+
+            static void execute(uint32_t S0, uint32_t S1, uint32_t& D, bool& SCC)
+            {
+                int32_t s0_i = static_cast<int32_t>(S0);
+                int32_t s1_i = static_cast<int32_t>(S1);
+                
+                D = (s0_i < s1_i) ? S0 : S1;
+                SCC = (s0_i < s1_i);
+            }
+            static constexpr uint32_t hex() { return BASE | (ID << 23); }
+        };
+
+        struct S_MIN_U32 // Opcode: 7
+        {
+            static constexpr uint8_t  ID = 7;
+            static constexpr int LATENCY = 1;
+            static constexpr const char* NAME = "S_MIN_U32";
+            static constexpr const char* DESK = "Minimum of two unsigned 32-bit integers.";
+
+            static void execute(uint32_t S0, uint32_t S1, uint32_t& D, bool& SCC)
+            {
+                D = (S0 < S1) ? S0 : S1;
+                SCC = (S0 < S1);
+            }
+            static constexpr uint32_t hex() { return BASE | (ID << 23); }
+        };
+
+        struct S_MAX_I32 // Opcode: 8
+        {
+            static constexpr uint8_t  ID = 8;
+            static constexpr int LATENCY = 1;
+            static constexpr const char* NAME = "S_MAX_I32";
+            static constexpr const char* DESK = "Maximum of two signed 32-bit integers.";
+
+            static void execute(uint32_t S0, uint32_t S1, uint32_t& D, bool& SCC)
+            {
+                int32_t s0_i = static_cast<int32_t>(S0);
+                int32_t s1_i = static_cast<int32_t>(S1);
+                
+                D = (s0_i > s1_i) ? S0 : S1;
+                SCC = (s0_i > s1_i);
+            }
+            static constexpr uint32_t hex() { return BASE | (ID << 23); }
+        };
+
+        struct S_MAX_U32 // Opcode: 9
+        {
+            static constexpr uint8_t  ID = 9;
+            static constexpr int LATENCY = 1;
+            static constexpr const char* NAME = "S_MAX_U32";
+            static constexpr const char* DESK = "Maximum of two unsigned 32-bit integers.";
+
+            static void execute(uint32_t S0, uint32_t S1, uint32_t& D, bool& SCC)
+            {
+                D = (S0 > S1) ? S0 : S1;
+                SCC = (S0 > S1);
+            }
+            static constexpr uint32_t hex() { return BASE | (ID << 23); }
+        };
+
+        struct S_CSELECT_B32 // Opcode: 10
+        {
+            static constexpr uint8_t  ID = 10;
+            static constexpr int LATENCY = 1;
+            static constexpr const char* NAME = "S_CSELECT_B32";
+            static constexpr const char* DESK = "Conditional select 32-bit based on SCC.";
+
+            static void execute(uint32_t S0, uint32_t S1, uint32_t& D, bool SCC)
+            {
+                D = SCC ? S0 : S1;
+            }
+            static constexpr uint32_t hex() { return BASE | (ID << 23); }
+        };
+
+        struct S_CSELECT_B64 // Opcode: 11
+        {
+            static constexpr uint8_t  ID = 11;
+            static constexpr int LATENCY = 1;
+            static constexpr const char* NAME = "S_CSELECT_B64";
+            static constexpr const char* DESK = "Conditional select 64-bit based on SCC.";
+
+            static void execute(uint64_t S0, uint64_t S1, uint64_t& D, bool SCC)
+            {
+                D = SCC ? S0 : S1;
+            }
+            static constexpr uint32_t hex() { return BASE | (ID << 23); }
+        };
+
+        struct S_AND_B32 // Opcode: 12
+        {
+            static constexpr uint8_t  ID = 12;
+            static constexpr int LATENCY = 1;
+            static constexpr const char* NAME = "S_AND_B32";
+            static constexpr const char* DESK = "Bitwise AND 32-bit.";
+
+            static void execute(uint32_t S0, uint32_t S1, uint32_t& D, bool& SCC)
+            {
+                D = S0 & S1;
+                SCC = (D != 0);
+            }
+            static constexpr uint32_t hex() { return BASE | (ID << 23); }
+        };
+
+        struct S_AND_B64 // Opcode: 13
+        {
+            static constexpr uint8_t  ID = 13;
+            static constexpr int LATENCY = 1;
+            static constexpr const char* NAME = "S_AND_B64";
+            static constexpr const char* DESK = "Bitwise AND 64-bit.";
+
+            static void execute(uint64_t S0, uint64_t S1, uint64_t& D, bool& SCC)
+            {
+                D = S0 & S1;
+                SCC = (D != 0);
+            }
+            static constexpr uint32_t hex() { return BASE | (ID << 23); }
+        };
+
+        struct S_OR_B32 // Opcode: 14
+        {
+            static constexpr uint8_t  ID = 14;
+            static constexpr int LATENCY = 1;
+            static constexpr const char* NAME = "S_OR_B32";
+            static constexpr const char* DESK = "Bitwise OR 32-bit.";
+
+            static void execute(uint32_t S0, uint32_t S1, uint32_t& D, bool& SCC)
+            {
+                D = S0 | S1;
+                SCC = (D != 0);
+            }
+            static constexpr uint32_t hex() { return BASE | (ID << 23); }
+        };
+
+        struct S_OR_B64 // Opcode: 15
+        {
+            static constexpr uint8_t  ID = 15;
+            static constexpr int LATENCY = 1;
+            static constexpr const char* NAME = "S_OR_B64";
+            static constexpr const char* DESK = "Bitwise OR 64-bit.";
+
+            static void execute(uint64_t S0, uint64_t S1, uint64_t& D, bool& SCC)
+            {
+                D = S0 | S1;
+                SCC = (D != 0);
+            }
+            static constexpr uint32_t hex() { return BASE | (ID << 23); }
+        };
+
+        struct S_XOR_B32 // Opcode: 16
+        {
+            static constexpr uint8_t  ID = 16;
+            static constexpr int LATENCY = 1;
+            static constexpr const char* NAME = "S_XOR_B32";
+            static constexpr const char* DESK = "Bitwise XOR 32-bit.";
+
+            static void execute(uint32_t S0, uint32_t S1, uint32_t& D, bool& SCC)
+            {
+                D = S0 ^ S1;
+                SCC = (D != 0);
+            }
+            static constexpr uint32_t hex() { return BASE | (ID << 23); }
+        };
+
+        struct S_XOR_B64 // Opcode: 17
+        {
+            static constexpr uint8_t  ID = 17;
+            static constexpr int LATENCY = 1;
+            static constexpr const char* NAME = "S_XOR_B64";
+            static constexpr const char* DESK = "Bitwise XOR 64-bit.";
+
+            static void execute(uint64_t S0, uint64_t S1, uint64_t& D, bool& SCC)
+            {
+                D = S0 ^ S1;
+                SCC = (D != 0);
+            }
+            static constexpr uint32_t hex() { return BASE | (ID << 23); }
+        };
+
+        struct S_ANDN2_B32 // Opcode: 18
+        {
+            static constexpr uint8_t  ID = 18;
+            static constexpr int LATENCY = 1;
+            static constexpr const char* NAME = "S_ANDN2_B32";
+            static constexpr const char* DESK = "Bitwise AND with inverted S1 32-bit.";
+
+            static void execute(uint32_t S0, uint32_t S1, uint32_t& D, bool& SCC)
+            {
+                D = S0 & ~S1;
+                SCC = (D != 0);
+            }
+            static constexpr uint32_t hex() { return BASE | (ID << 23); }
+        };
+
+        struct S_ANDN2_B64 // Opcode: 19
+        {
+            static constexpr uint8_t  ID = 19;
+            static constexpr int LATENCY = 1;
+            static constexpr const char* NAME = "S_ANDN2_B64";
+            static constexpr const char* DESK = "Bitwise AND with inverted S1 64-bit.";
+
+            static void execute(uint64_t S0, uint64_t S1, uint64_t& D, bool& SCC)
+            {
+                D = S0 & ~S1;
+                SCC = (D != 0);
+            }
+            static constexpr uint32_t hex() { return BASE | (ID << 23); }
+        };
+
+        struct S_ORN2_B32 // Opcode: 20
+        {
+            static constexpr uint8_t  ID = 20;
+            static constexpr int LATENCY = 1;
+            static constexpr const char* NAME = "S_ORN2_B32";
+            static constexpr const char* DESK = "Bitwise OR with inverted S1 32-bit.";
+
+            static void execute(uint32_t S0, uint32_t S1, uint32_t& D, bool& SCC)
+            {
+                D = S0 | ~S1;
+                SCC = (D != 0);
+            }
+            static constexpr uint32_t hex() { return BASE | (ID << 23); }
+        };
+
+        struct S_ORN2_B64 // Opcode: 21
+        {
+            static constexpr uint8_t  ID = 21;
+            static constexpr int LATENCY = 1;
+            static constexpr const char* NAME = "S_ORN2_B64";
+            static constexpr const char* DESK = "Bitwise OR with inverted S1 64-bit.";
+
+            static void execute(uint64_t S0, uint64_t S1, uint64_t& D, bool& SCC)
+            {
+                D = S0 | ~S1;
+                SCC = (D != 0);
+            }
+            static constexpr uint32_t hex() { return BASE | (ID << 23); }
+        };
+
+        struct S_NAND_B32 // Opcode: 22
+        {
+            static constexpr uint8_t  ID = 22;
+            static constexpr int LATENCY = 1;
+            static constexpr const char* NAME = "S_NAND_B32";
+            static constexpr const char* DESK = "Bitwise NAND 32-bit.";
+
+            static void execute(uint32_t S0, uint32_t S1, uint32_t& D, bool& SCC)
+            {
+                D = ~(S0 & S1);
+                SCC = (D != 0);
+            }
+            static constexpr uint32_t hex() { return BASE | (ID << 23); }
+        };
+
+        struct S_NAND_B64 // Opcode: 23
+        {
+            static constexpr uint8_t  ID = 23;
+            static constexpr int LATENCY = 1;
+            static constexpr const char* NAME = "S_NAND_B64";
+            static constexpr const char* DESK = "Bitwise NAND 64-bit.";
+
+            static void execute(uint64_t S0, uint64_t S1, uint64_t& D, bool& SCC)
+            {
+                D = ~(S0 & S1);
+                SCC = (D != 0);
+            }
+            static constexpr uint32_t hex() { return BASE | (ID << 23); }
+        };
+
+        struct S_NOR_B32 // Opcode: 24
+        {
+            static constexpr uint8_t  ID = 24;
+            static constexpr int LATENCY = 1;
+            static constexpr const char* NAME = "S_NOR_B32";
+            static constexpr const char* DESK = "Bitwise NOR 32-bit.";
+
+            static void execute(uint32_t S0, uint32_t S1, uint32_t& D, bool& SCC)
+            {
+                D = ~(S0 | S1);
+                SCC = (D != 0);
+            }
+            static constexpr uint32_t hex() { return BASE | (ID << 23); }
+        };
+
+        struct S_NOR_B64 // Opcode: 25
+        {
+            static constexpr uint8_t  ID = 25;
+            static constexpr int LATENCY = 1;
+            static constexpr const char* NAME = "S_NOR_B64";
+            static constexpr const char* DESK = "Bitwise NOR 64-bit.";
+
+            static void execute(uint64_t S0, uint64_t S1, uint64_t& D, bool& SCC)
+            {
+                D = ~(S0 | S1);
+                SCC = (D != 0);
+            }
+            static constexpr uint32_t hex() { return BASE | (ID << 23); }
+        };
+
+        struct S_XNOR_B32 // Opcode: 26
+        {
+            static constexpr uint8_t  ID = 26;
+            static constexpr int LATENCY = 1;
+            static constexpr const char* NAME = "S_XNOR_B32";
+            static constexpr const char* DESK = "Bitwise XNOR 32-bit.";
+
+            static void execute(uint32_t S0, uint32_t S1, uint32_t& D, bool& SCC)
+            {
+                D = ~(S0 ^ S1);
+                SCC = (D != 0);
+            }
+            static constexpr uint32_t hex() { return BASE | (ID << 23); }
+        };
+
+        struct S_XNOR_B64 // Opcode: 27
+        {
+            static constexpr uint8_t  ID = 27;
+            static constexpr int LATENCY = 1;
+            static constexpr const char* NAME = "S_XNOR_B64";
+            static constexpr const char* DESK = "Bitwise XNOR 64-bit.";
+
+            static void execute(uint64_t S0, uint64_t S1, uint64_t& D, bool& SCC)
+            {
+                D = ~(S0 ^ S1);
+                SCC = (D != 0);
+            }
+            static constexpr uint32_t hex() { return BASE | (ID << 23); }
+        };
+
+        struct S_LSHL_B32 // Opcode: 28
+        {
+            static constexpr uint8_t  ID = 28;
+            static constexpr int LATENCY = 1;
+            static constexpr const char* NAME = "S_LSHL_B32";
+            static constexpr const char* DESK = "Logical shift left 32-bit.";
+
+            static void execute(uint32_t S0, uint32_t S1, uint32_t& D, bool& SCC)
+            {
+                uint32_t shift_amount = S1 & 0x1F; // Маска 4:0 (от 0 до 31 бита)
+                D = S0 << shift_amount;
+                SCC = (D != 0);
+            }
+            static constexpr uint32_t hex() { return BASE | (ID << 23); }
+        };
+
+        struct S_LSHL_B64 // Opcode: 29
+        {
+            static constexpr uint8_t  ID = 29;
+            static constexpr int LATENCY = 1;
+            static constexpr const char* NAME = "S_LSHL_B64";
+            static constexpr const char* DESK = "Logical shift left 64-bit.";
+
+            static void execute(uint64_t S0, uint64_t S1, uint64_t& D, bool& SCC)
+            {
+                uint32_t shift_amount = S1 & 0x3F; // Маска 5:0 (от 0 до 63 бит)
+                D = S0 << shift_amount;
+                SCC = (D != 0);
+            }
+            static constexpr uint32_t hex() { return BASE | (ID << 23); }
+        };
+
+        struct S_LSHR_B32 // Opcode: 30
+        {
+            static constexpr uint8_t  ID = 30;
+            static constexpr int LATENCY = 1;
+            static constexpr const char* NAME = "S_LSHR_B32";
+            static constexpr const char* DESK = "Logical shift right 32-bit.";
+
+            static void execute(uint32_t S0, uint32_t S1, uint32_t& D, bool& SCC)
+            {
+                uint32_t shift_amount = S1 & 0x1F;
+                D = S0 >> shift_amount;
+                SCC = (D != 0);
+            }
+            static constexpr uint32_t hex() { return BASE | (ID << 23); }
+        };
+
+        struct S_LSHR_B64 // Opcode: 31
+        {
+            static constexpr uint8_t  ID = 31;
+            static constexpr int LATENCY = 1;
+            static constexpr const char* NAME = "S_LSHR_B64";
+            static constexpr const char* DESK = "Logical shift right 64-bit.";
+
+            static void execute(uint64_t S0, uint64_t S1, uint64_t& D, bool& SCC)
+            {
+                uint32_t shift_amount = S1 & 0x3F;
+                D = S0 >> shift_amount;
+                SCC = (D != 0);
             }
             static constexpr uint32_t hex() { return BASE | (ID << 23); }
         };
