@@ -3,53 +3,73 @@
 #include <string>
 #include <bitset>
 
-int main()
+struct Debug 
 {
-using namespace vega;
-
-	std::string input_bitsS0;
-    std::string input_bitsS1;
-	uint32_t S0 = 0;
+    uint32_t S0 = 0;
     uint32_t S1 = 0;
-	uint32_t D = 0;
-	bool SCC = true;
+    uint32_t D = 0;
+    bool SCC = false;
 
-	std::cout << "Insert your number, uint32_t \ncurrent status: 0b" << std::bitset<32>(S0) << std::endl;
-	std::cout << "Insert:		0b";
-	std::cin >> input_bitsS0;
+    void ask_S0() 
+    {
+        std::string input;
+        std::cout << "Insert S0 current: \n0b" << std::bitset<32>(S0) << "\n0b";
+        std::cin >> input;
+        try { S0 = static_cast<uint32_t>(std::bitset<32>(input).to_ulong()); }
+        catch (...) { std::cerr << "Invalid bits!\n"; }
+    }
 
-	std::cout << "Insert your number, uint32_t \ncurrent status: 0b" << std::bitset<32>(S1) << std::endl;
-	std::cout << "Insert:		0b";
-    std::cin >> input_bitsS1;
+    void ask_S1() 
+    {
+        std::string input;
+        std::cout << "Insert S1 current: \n0b" << std::bitset<32>(S1) << "\n0b";
+        std::cin >> input;
+        try { S1 = static_cast<uint32_t>(std::bitset<32>(input).to_ulong()); }
+        catch (...) { std::cerr << "Invalid bits!\n"; }
+    }
 
-	try 
-	{
-        S0 = static_cast<uint32_t>(std::bitset<32>(input_bitsS0).to_ulong());
-    }	
-	catch (...) 
-	{
-        std::cerr << "Invalid bit string!" << std::endl;
-        return 1;
-	}
+    void echo_D() 
+    {
+        std::cout << "\n--- [" << "] ---" << std::endl;
+        std::cout << "D (bin): 0b" << std::bitset<32>(D) << std::endl;
+        std::cout << "D (hex): 0x" << std::hex << D << std::endl;
+        std::cout << "D (dec): " << std::dec << D << std::endl;
 
-	try 
-	{
-        S1 = static_cast<uint32_t>(std::bitset<32>(input_bitsS1).to_ulong());
-    }	
-	catch (...) 
-	{
-        std::cerr << "Invalid bit string!" << std::endl;
-        return 1;
-	}
+    }
+    
+    void echo_SCC()
+    {
+        std::string SCC_STRING;
+        if (SCC == 1) { SCC_STRING = "true"; }
+        else { SCC_STRING = "false"; }
+        std::cout << "SCC:     " << SCC_STRING << std::endl;
+        std::cout << "----------------------\n" << std::endl;
+    }
+};
 
-/*   SOP1::S_FLBIT_I32_B32::execute(S0, D);
-        std::cout << "Midle unswer:   0b" << std::bitset<32>(D) << std::endl;
-    SOP1::S_MOV_B32::execute(D, S0); */
+int main() 
+{
+    using namespace vega;
+    using namespace SOP2;
+    using namespace SOP1;
+    Debug a;
 
-    SOP2::S_ADD_U32::execute(S0, S1, D);
+    a.ask_S0(); a.ask_S1();
+    S_ADD_U32::execute(a.S0, a.S1, a.D, a.SCC); S_JUMP_B32::execute([0x00000001]);
+    a.echo_D(); a.echo_SCC();
+    S_MOV_B32::execute(a.D, a.S0);
+    a.ask_S1();
+    S_SUB_U32::execute(a.S0, a.S1, a.D, a.SCC);
+    a.echo_D(); a.echo_SCC();
+    S_MOV_B32::execute(a.D, a.S0);
+    a.ask_S1();
+    S_XNOR_B32::execute(a.S0, a.S1, a.D, a.SCC);
+    a.echo_D(); a.echo_SCC();
+    S_MOV_B32::execute(a.D, a.S0);
+    S_BREV_B32::execute(a.S0, a.D);
+    a.echo_D(); a.echo_SCC();
 
+    std::cout << "0b" << std::bitset<32>(a.D) << std::endl;
 
-	std::cout << "Your answer is: 0b" << std::bitset<32>(D) << std::endl;
-	std::cout << "Your answer is: 0d" << std::dec << D << std::endl;
-	return 0;
+    return 0;
 }
